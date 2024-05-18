@@ -26,11 +26,20 @@ export const verifyToken = async (req, res, next) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const { uid } = decodedToken;
-    req.uid = uid;
+    const user = auth.currentUser;
 
+    if (!user) {
+      res.status(401).json({ error: 'User not found' });
+    }
+
+    if (user.uid !== uid) {
+      res.status(401).json({ error: 'Invalid access token' })
+    }
+
+    req.uid = uid;
     next();
   } catch (err) {
-    res.status(401).json({ error: err });
+    res.status(401).json({ error: 'Invalid access token' });
   }
 };
 
